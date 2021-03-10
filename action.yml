@@ -1,11 +1,38 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'npm-split'
+description: 'Split pull requests by spefic files'
 inputs:
-  milliseconds: # change this
+  pull-number:
+    description: PR number
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  file-pattern:
+    description: Target files pattern
+    required: true
+  branch-suffix:
+    description: This suffix is attached to the newly created branch
+    required: false
+    default: '-split'
+  commit-message:
+    description: Commit message
+    required: false
+  commit-user:
+    description: User name for commit author
+    required: false
+    default: 'split-pr'
+  commit-email:
+    description: Email for commit author
+    required: false
+    default: 'split-pr@example.com'
+  title-prefix:
+    description: This prefix is attached to the newly created pull request
+    required: false
+    default: 'Split PR: '
+  token:
+    description: Github Token
+    required: false
+    default: ${{ github.token }}
+outputs:
+  result-pr:
+    description: PR number of newly created pull request
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -1,22 +1,71 @@
-<p align="center">
-  <a href="https://github.com/actions/typescript-action/actions"><img alt="typescript-action status" src="https://github.com/actions/typescript-action/workflows/build-test/badge.svg"></a>
-</p>
+<a href="https://github.com/mitene/split-pr/actions"><img alt="typescript-action status" src="https://github.com/mitene/split-pr/workflows/build-test/badge.svg"></a>
 
-# Create a JavaScript Action using TypeScript
+# split-pr
 
-Use this template to bootstrap the creation of a TypeScript action.:rocket:
+## Getting Started
 
-This template includes compilation support, tests, a validation workflow, publishing, and versioning guidance.  
+```yaml
+name: Split PR
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+on:
+  issue_comment:
+    types: [created]
 
-## Create an action from this template
+jobs:
+  split-pr:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/split-pr') }}
 
-Click the `Use this Template` and provide the new repo details for your action
+    steps:
+      - uses: actions/checkout@v2
 
-## Code in Main
+      - name: Split pull request
+        uses: mitene/split-pr@main
+        with:
+          pull-number: ${{ github.event.issue.number }}
+          file-pattern: "dir/**"
+          branch-suffix: "-split"
+          commit-message: "Split PR #${{ github.event.issue.number }}"
+          commit-user: ${{ github.event.comment.sender.login }}
+          commit-email: ${{ github.event.comment.sender.id }}+${{ github.event.comment.sender.login }}@users.noreply.github.com
+          title-prefix: "split-pr: "
+          token: ${{ github.token }}
 
-> First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
+      - name: Report success
+        if: ${{ success() }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+            github.reactions.createForIssueComment({
+              owner: context.issue.owner,
+              repo: context.issue.repo,
+              comment_id: context.payload.comment.id,
+              content: "rocket"
+            });
+      - name: Report failure
+        if: ${{ failure() }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+            github.reactions.createForIssueComment({
+              owner: context.issue.owner,
+              repo: context.issue.repo,
+              comment_id: context.payload.comment.id,
+              content: "confused"
+            });
+            github.issues.createComment({
+              owner: context.issue.owner,
+              repo: context.issue.repo,
+              issue_number: context.payload.issue.number,
+              body: `:x:**ERROR**: Failed to split pull request. See https://github.com/${context.issue.owner}/${context.issue.repo}/actions/runs/${context.runId} for detail.`
+            });
+```
+
+## Development
+
+### Setup
+
+First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
 
 Install the dependencies  
 ```bash
@@ -40,66 +89,25 @@ $ npm test
 ...
 ```
 
-## Change action.yml
-
-The action.yml contains defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-import * as core from '@actions/core';
-...
-
-async function run() {
-  try { 
-      ...
-  } 
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Publish to a distribution branch
+### Push
 
 Actions are run from GitHub repos so we will checkin the packed dist folder. 
 
-Then run [ncc](https://github.com/zeit/ncc) and push the results:
+Then run npm package command and push the results:
 ```bash
-$ npm run package
-$ git add dist
-$ git commit -a -m "prod dependencies"
-$ git push origin releases/v1
+$ npm run all
+$ git add . -v
+$ git commit -v
+$ git push origin BRANCH
 ```
 
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
+Check test results and merge working branch into main.
 
-Your action is now published! :rocket: 
+### Release
 
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Validate
-
-You can now validate the action by referencing `./` in a workflow in your repo (see [test.yml](.github/workflows/test.yml))
-
-```yaml
-uses: ./
-with:
-  milliseconds: 1000
+Push v1 tag:
 ```
-
-See the [actions tab](https://github.com/actions/typescript-action/actions) for runs of this action! :rocket:
-
-## Usage:
-
-After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action
+$ git fetch origin
+$ git tag -f v1 origin/master
+$ git push -f origin v1
+```
