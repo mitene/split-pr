@@ -26,6 +26,9 @@ inputs:
     description: This prefix is attached to the newly created pull request
     required: false
     default: 'Split PR: '
+  body:
+    description: Body for newly created pull request
+    required: false
   token:
     description: Github Token
     required: false

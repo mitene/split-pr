@@ -10,6 +10,7 @@ export async function run(params: {
   filePattern: string
   branchSuffix: string
   titlePrefix: string
+  body: string
   commitMessage: string
   commitUser: string
   commitEmail: string
@@ -61,7 +62,7 @@ export async function run(params: {
     head: splitBranch,
     base: targetPull.base.ref,
     title: params.titlePrefix + targetPull.title,
-    body: params.commitMessage
+    body: params.body
   })
   core.endGroup()
 

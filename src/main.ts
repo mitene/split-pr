@@ -18,6 +18,9 @@ async function run(): Promise<void> {
       commitUser: core.getInput('commit-user'),
       commitEmail: core.getInput('commit-email'),
       titlePrefix: core.getInput('title-prefix'),
+      body:
+        core.getInput('body') ||
+        `Split pull request #${core.getInput('pull-number')}`,
       token: core.getInput('token')
     })
 

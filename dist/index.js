@@ -118,6 +118,8 @@ function run() {
                 commitUser: core.getInput('commit-user'),
                 commitEmail: core.getInput('commit-email'),
                 titlePrefix: core.getInput('title-prefix'),
+                body: core.getInput('body') ||
+                    `Split pull request #${core.getInput('pull-number')}`,
                 token: core.getInput('token')
             });
             core.setOutput('split-pull-number', result.splitPullNumber);
@@ -202,7 +204,7 @@ function run(params) {
             head: splitBranch,
             base: targetPull.base.ref,
             title: params.titlePrefix + targetPull.title,
-            body: params.commitMessage
+            body: params.body
         });
         core.endGroup();
         return { splitPullNumber: splitPull.number };

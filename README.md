@@ -25,10 +25,11 @@ jobs:
           pull-number: ${{ github.event.issue.number }}
           file-pattern: "dir/**"
           branch-suffix: "-split"
-          commit-message: "Split PR #${{ github.event.issue.number }}"
+          commit-message: "Split pull request #${{ github.event.issue.number }}"
           commit-user: ${{ github.event.comment.sender.login }}
           commit-email: ${{ github.event.comment.sender.id }}+${{ github.event.comment.sender.login }}@users.noreply.github.com
           title-prefix: "split-pr: "
+          body: "This pull request is branched from #${{ github.event.issue.number }}",
           token: ${{ github.token }}
 
       - name: Report success

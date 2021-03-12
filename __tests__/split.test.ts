@@ -32,7 +32,7 @@ test('foo', async () => {
       head: 'working_branch-split',
       base: 'base_branch',
       title: 'split: pull request title',
-      body: 'commit message'
+      body: 'body'
     })
     .reply(201, {
       number: 101
@@ -45,6 +45,7 @@ test('foo', async () => {
     filePattern: 'dir/**',
     branchSuffix: '-split',
     titlePrefix: 'split: ',
+    body: 'body',
     commitMessage: 'commit message',
     commitUser: 'split-pr-user',
     commitEmail: 'split-pr@example.com',
