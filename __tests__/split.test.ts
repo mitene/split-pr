@@ -37,10 +37,17 @@ test('foo', async () => {
     .reply(201, {
       number: 101
     })
+    .post(`/repos/owner/repo/statuses/head_sha`, {
+      state: 'success',
+      context: 'split-pr',
+      target_url: 'https://github.com/owner/repo/actions/runs/3'
+    })
+    .reply(201, {})
 
   const result = await split.run({
     owner: 'owner',
     repo: 'repo',
+    runId: 3,
     pullNumber: 100,
     filePattern: 'dir/**',
     branchSuffix: '-split',

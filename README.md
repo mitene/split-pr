@@ -31,35 +31,6 @@ jobs:
           title-prefix: "split-pr: "
           body: "This pull request is branched from #${{ github.event.issue.number }}",
           token: ${{ github.token }}
-
-      - name: Report success
-        if: ${{ success() }}
-        uses: actions/github-script@v3
-        with:
-          script: |
-            github.reactions.createForIssueComment({
-              owner: context.issue.owner,
-              repo: context.issue.repo,
-              comment_id: context.payload.comment.id,
-              content: "rocket"
-            });
-      - name: Report failure
-        if: ${{ failure() }}
-        uses: actions/github-script@v3
-        with:
-          script: |
-            github.reactions.createForIssueComment({
-              owner: context.issue.owner,
-              repo: context.issue.repo,
-              comment_id: context.payload.comment.id,
-              content: "confused"
-            });
-            github.issues.createComment({
-              owner: context.issue.owner,
-              repo: context.issue.repo,
-              issue_number: context.payload.issue.number,
-              body: `:x:**ERROR**: Failed to split pull request. See https://github.com/${context.issue.owner}/${context.issue.repo}/actions/runs/${context.runId} for detail.`
-            });
 ```
 
 ## Development

@@ -8,6 +8,7 @@ async function run(): Promise<void> {
     const result = await split.run({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
+      runId: github.context.runId,
 
       pullNumber: parseInt(core.getInput('pull-number', {required: true})),
       filePattern: core.getInput('file-pattern', {required: true}),
