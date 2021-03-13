@@ -18,6 +18,12 @@ test('foo', async () => {
       },
       title: 'pull request title'
     })
+    .post(`/repos/owner/repo/statuses/head_sha`, {
+      state: 'pending',
+      context: 'split-pr',
+      target_url: 'https://github.com/owner/repo/actions/runs/3'
+    })
+    .reply(201, {})
     .get('/repos/owner/repo/pulls/100/commits')
     .reply(200, [
       {

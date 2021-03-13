@@ -33,6 +33,15 @@ export async function run(params: {
   })
   core.endGroup()
 
+  await octokit.repos.createCommitStatus({
+    owner: params.owner,
+    repo: params.repo,
+    sha: targetPull.head.sha,
+    state: 'pending',
+    context: 'split-pr',
+    target_url: `https://github.com/${params.owner}/${params.repo}/actions/runs/${params.runId}`
+  })
+
   try {
     core.startGroup('Create and push the split branch')
     const splitBranch = targetPull.head.ref + params.branchSuffix
