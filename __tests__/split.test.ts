@@ -62,6 +62,8 @@ test('foo', async () => {
     commitMessage: 'commit message',
     commitUser: 'split-pr-user',
     commitEmail: 'split-pr@example.com',
+    commitStatusContext: 'split-pr',
+    commitStatusDescription: undefined,
     token: 'secret'
   })
 

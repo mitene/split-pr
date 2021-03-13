@@ -121,6 +121,8 @@ function run() {
                 titlePrefix: core.getInput('title-prefix'),
                 body: core.getInput('body') ||
                     `Split pull request #${core.getInput('pull-number')}`,
+                commitStatusContext: core.getInput('commit-status-context'),
+                commitStatusDescription: core.getInput('commit-status-description') || undefined,
                 token: core.getInput('token')
             });
             core.setOutput('split-pull-number', result.splitPullNumber);
@@ -189,14 +191,18 @@ function run(params) {
             pull_number: params.pullNumber
         });
         core.endGroup();
-        yield octokit.repos.createCommitStatus({
-            owner: params.owner,
-            repo: params.repo,
-            sha: targetPull.head.sha,
-            state: 'pending',
-            context: 'split-pr',
-            target_url: `https://github.com/${params.owner}/${params.repo}/actions/runs/${params.runId}`
+        const createCommitStatus = (state) => __awaiter(this, void 0, void 0, function* () {
+            return octokit.repos.createCommitStatus({
+                owner: params.owner,
+                repo: params.repo,
+                sha: targetPull.head.sha,
+                state,
+                context: params.commitStatusContext,
+                description: params.commitStatusDescription,
+                target_url: `https://github.com/${params.owner}/${params.repo}/actions/runs/${params.runId}`
+            });
         });
+        yield createCommitStatus('pending');
         try {
             core.startGroup('Create and push the split branch');
             const splitBranch = targetPull.head.ref + params.branchSuffix;
@@ -217,25 +223,11 @@ function run(params) {
                 body: params.body
             });
             core.endGroup();
-            yield octokit.repos.createCommitStatus({
-                owner: params.owner,
-                repo: params.repo,
-                sha: targetPull.head.sha,
-                state: 'success',
-                context: 'split-pr',
-                target_url: `https://github.com/${params.owner}/${params.repo}/actions/runs/${params.runId}`
-            });
+            yield createCommitStatus('success');
             return { splitPullNumber: splitPull.number };
         }
         catch (e) {
-            yield octokit.repos.createCommitStatus({
-                owner: params.owner,
-                repo: params.repo,
-                sha: targetPull.head.sha,
-                state: 'failure',
-                context: 'split-pr',
-                target_url: `https://github.com/${params.owner}/${params.repo}/actions/runs/${params.runId}`
-            });
+            yield createCommitStatus('failure');
             throw e;
         }
     });

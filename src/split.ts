@@ -15,6 +15,8 @@ export async function run(params: {
   commitMessage: string
   commitUser: string
   commitEmail: string
+  commitStatusContext: string
+  commitStatusDescription?: string
   token: string
 }): Promise<{splitPullNumber: number}> {
   const octokit = github.getOctokit(params.token)
@@ -33,14 +35,21 @@ export async function run(params: {
   })
   core.endGroup()
 
-  await octokit.repos.createCommitStatus({
-    owner: params.owner,
-    repo: params.repo,
-    sha: targetPull.head.sha,
-    state: 'pending',
-    context: 'split-pr',
-    target_url: `https://github.com/${params.owner}/${params.repo}/actions/runs/${params.runId}`
-  })
+  const createCommitStatus = async (
+    state: 'error' | 'failure' | 'pending' | 'success'
+  ): ReturnType<typeof octokit.repos.createCommitStatus> => {
+    return octokit.repos.createCommitStatus({
+      owner: params.owner,
+      repo: params.repo,
+      sha: targetPull.head.sha,
+      state,
+      context: params.commitStatusContext,
+      description: params.commitStatusDescription,
+      target_url: `https://github.com/${params.owner}/${params.repo}/actions/runs/${params.runId}`
+    })
+  }
+
+  await createCommitStatus('pending')
 
   try {
     core.startGroup('Create and push the split branch')
@@ -77,25 +86,11 @@ export async function run(params: {
     })
     core.endGroup()
 
-    await octokit.repos.createCommitStatus({
-      owner: params.owner,
-      repo: params.repo,
-      sha: targetPull.head.sha,
-      state: 'success',
-      context: 'split-pr',
-      target_url: `https://github.com/${params.owner}/${params.repo}/actions/runs/${params.runId}`
-    })
+    await createCommitStatus('success')
 
     return {splitPullNumber: splitPull.number}
   } catch (e) {
-    await octokit.repos.createCommitStatus({
-      owner: params.owner,
-      repo: params.repo,
-      sha: targetPull.head.sha,
-      state: 'failure',
-      context: 'split-pr',
-      target_url: `https://github.com/${params.owner}/${params.repo}/actions/runs/${params.runId}`
-    })
+    await createCommitStatus('failure')
     throw e
   }
 }

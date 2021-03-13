@@ -29,6 +29,13 @@ inputs:
   body:
     description: Body for newly created pull request
     required: false
+  commit-status-context:
+    description: Commit status context that will be posted to the original pull request
+    required: false
+    default: 'split-pr'
+  commit-status-description:
+    description: Commit status description that will be posted to the original pull request
+    required: false
   token:
     description: Github Token
     required: false

@@ -28,6 +28,8 @@ jobs:
           commit-message: "Split pull request #${{ github.event.issue.number }}"
           commit-user: ${{ github.event.comment.sender.login }}
           commit-email: ${{ github.event.comment.sender.id }}+${{ github.event.comment.sender.login }}@users.noreply.github.com
+          commit-status-context: 'split-pr',
+          commit-status-description: '...',
           title-prefix: "split-pr: "
           body: "This pull request is branched from #${{ github.event.issue.number }}",
           token: ${{ github.token }}

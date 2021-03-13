@@ -22,6 +22,9 @@ async function run(): Promise<void> {
       body:
         core.getInput('body') ||
         `Split pull request #${core.getInput('pull-number')}`,
+      commitStatusContext: core.getInput('commit-status-context'),
+      commitStatusDescription:
+        core.getInput('commit-status-description') || undefined,
       token: core.getInput('token')
     })
 
