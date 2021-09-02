@@ -19,7 +19,7 @@ export async function run(params: {
   commitStatusDescription?: string
   token: string
 }): Promise<{splitPullNumber: number}> {
-  const octokit = github.getOctokit(params.token)
+  const octokit = github.getOctokit(params.token).rest
 
   // Get target pull request
   core.startGroup('Get the target pull request')
