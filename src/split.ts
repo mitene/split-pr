@@ -66,8 +66,7 @@ export async function run(params: {
       '1'
     )
     await git('switch', splitBranch)
-    await git('restore', '-s', headRef, params.filePattern)
-    await git('add', '-Av', '.')
+    await git('restore', '-SW', '-s', headRef, params.filePattern)
     await git(
       '-c',
       `user.email=${params.commitEmail}`,

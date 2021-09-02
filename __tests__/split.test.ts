@@ -71,8 +71,7 @@ test('foo', async () => {
     'switch',
     expect.stringMatching(/working_branch-split-\d+/)
   )
-  expect(git).toBeCalledWith('restore', '-s', 'working_branch', 'dir/**')
-  expect(git).toBeCalledWith('add', '-Av', '.')
+  expect(git).toBeCalledWith('restore', '-SW', '-s', 'working_branch', 'dir/**')
   expect(git).toBeCalledWith(
     '-c',
     'user.email=split-pr@example.com',
