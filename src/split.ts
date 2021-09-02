@@ -23,16 +23,25 @@ export async function run(params: {
 
   // Get target pull request
   core.startGroup('Get the target pull request')
-  const {data: targetPull} = await octokit.pulls.get({
-    owner: params.owner,
-    repo: params.repo,
-    pull_number: params.pullNumber
-  })
-  const {data: targetPullCommits} = await octokit.pulls.listCommits({
-    owner: params.owner,
-    repo: params.repo,
-    pull_number: params.pullNumber
-  })
+
+  const targetPull = await (async function() {
+    for (let i = 0; i < 5; i++) {
+      const {data: p} = await octokit.pulls.get({
+        owner: params.owner,
+        repo: params.repo,
+        pull_number: params.pullNumber
+      })
+      if (p.mergeable === true) {
+        return p
+      } else if (p.mergeable === false) {
+        throw new Error("this pull request cannot be merged")
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+    throw new Error("cannot get mergeable state")
+  })()
+
   core.endGroup()
 
   const createCommitStatus = async (
@@ -53,15 +62,15 @@ export async function run(params: {
 
   try {
     core.startGroup('Create and push the split branch')
-    const splitBranch = targetPull.head.ref + params.branchSuffix
-    await git(
-      'fetch',
-      'origin',
-      targetPullCommits[0].parents[0].sha,
-      targetPull.head.sha
-    )
-    await git('switch', '-c', splitBranch, targetPullCommits[0].parents[0].sha)
-    await git('restore', '-s', targetPull.head.sha, params.filePattern)
+
+    const splitBranch = targetPull.head.ref + params.branchSuffix + '-' + Date.now()
+    const baseRef = targetPull.base.ref
+    const mergeSha = targetPull.merge_commit_sha as string
+
+    targetPull.base.ref
+    await git('fetch', 'origin', `${baseRef}:${splitBranch}`, `${mergeSha}`, '--depth', '1')
+    await git('switch', splitBranch)
+    await git('restore', '-s', mergeSha, params.filePattern)
     await git('add', '-Av', '.')
     await git(
       '-c',
@@ -80,7 +89,7 @@ export async function run(params: {
       owner: params.owner,
       repo: params.repo,
       head: splitBranch,
-      base: targetPull.base.ref,
+      base: baseRef,
       title: params.titlePrefix + targetPull.title,
       body: params.body
     })
@@ -90,6 +99,7 @@ export async function run(params: {
 
     return {splitPullNumber: splitPull.number}
   } catch (e) {
+    console.error(e)
     await createCommitStatus('failure')
     throw e
   }
