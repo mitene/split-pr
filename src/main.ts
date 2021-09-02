@@ -30,7 +30,11 @@ async function run(): Promise<void> {
 
     core.setOutput('split-pull-number', result.splitPullNumber)
   } catch (error) {
-    core.setFailed(error.message)
+    if (error instanceof Error || typeof error === 'string') {
+      core.setFailed(error)
+    } else {
+      console.error(error)
+    }
   }
 }
 

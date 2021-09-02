@@ -1,5 +1,5 @@
-import * as core from '@actions/core'
 import * as child from 'child_process'
+import * as core from '@actions/core'
 
 export async function git(...args: string[]): Promise<void> {
   return new Promise<void>((resove, reject) => {
