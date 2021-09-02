@@ -63,7 +63,7 @@ test('foo', async () => {
     'fetch',
     'origin',
     expect.stringMatching(/base_branch:working_branch-split-\d+/),
-    'working_branch',
+    'working_branch:working_branch',
     '--depth',
     '1'
   )

@@ -61,7 +61,7 @@ export async function run(params: {
       'fetch',
       'origin',
       `${baseRef}:${splitBranch}`,
-      `${headRef}`,
+      `${headRef}:${headRef}`,
       '--depth',
       '1'
     )
