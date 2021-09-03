@@ -1,5 +1,5 @@
-import * as github from '@actions/github'
 import * as core from '@actions/core'
+import * as github from '@actions/github'
 import {git} from './git'
 
 export async function run(params: {
@@ -19,20 +19,17 @@ export async function run(params: {
   commitStatusDescription?: string
   token: string
 }): Promise<{splitPullNumber: number}> {
-  const octokit = github.getOctokit(params.token)
+  const octokit = github.getOctokit(params.token).rest
 
   // Get target pull request
   core.startGroup('Get the target pull request')
+
   const {data: targetPull} = await octokit.pulls.get({
     owner: params.owner,
     repo: params.repo,
     pull_number: params.pullNumber
   })
-  const {data: targetPullCommits} = await octokit.pulls.listCommits({
-    owner: params.owner,
-    repo: params.repo,
-    pull_number: params.pullNumber
-  })
+
   core.endGroup()
 
   const createCommitStatus = async (
@@ -53,16 +50,23 @@ export async function run(params: {
 
   try {
     core.startGroup('Create and push the split branch')
-    const splitBranch = targetPull.head.ref + params.branchSuffix
+
+    const splitBranch = `${targetPull.head.ref}${
+      params.branchSuffix
+    }-${Date.now()}`
+    const baseRef = targetPull.base.ref
+    const headRef = targetPull.head.ref
+
     await git(
       'fetch',
       'origin',
-      targetPullCommits[0].parents[0].sha,
-      targetPull.head.sha
+      `${baseRef}:${splitBranch}`,
+      `${headRef}:${headRef}`,
+      '--depth',
+      '1'
     )
-    await git('switch', '-c', splitBranch, targetPullCommits[0].parents[0].sha)
-    await git('restore', '-s', targetPull.head.sha, params.filePattern)
-    await git('add', '-Av', '.')
+    await git('switch', splitBranch)
+    await git('restore', '-SW', '-s', headRef, params.filePattern)
     await git(
       '-c',
       `user.email=${params.commitEmail}`,
@@ -80,7 +84,7 @@ export async function run(params: {
       owner: params.owner,
       repo: params.repo,
       head: splitBranch,
-      base: targetPull.base.ref,
+      base: baseRef,
       title: params.titlePrefix + targetPull.title,
       body: params.body
     })
@@ -90,6 +94,7 @@ export async function run(params: {
 
     return {splitPullNumber: splitPull.number}
   } catch (e) {
+    console.error(e)
     await createCommitStatus('failure')
     throw e
   }

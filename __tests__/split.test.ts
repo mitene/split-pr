@@ -24,18 +24,8 @@ test('foo', async () => {
       target_url: 'https://github.com/owner/repo/actions/runs/3'
     })
     .reply(201, {})
-    .get('/repos/owner/repo/pulls/100/commits')
-    .reply(200, [
-      {
-        parents: [
-          {
-            sha: 'root_sha'
-          }
-        ]
-      }
-    ])
     .post('/repos/owner/repo/pulls', {
-      head: 'working_branch-split',
+      head: /working_branch-split-\d+/,
       base: 'base_branch',
       title: 'split: pull request title',
       body: 'body'
@@ -69,10 +59,19 @@ test('foo', async () => {
 
   scope.done() // assert github apis are called as expected
 
-  expect(git).toBeCalledWith('fetch', 'origin', 'root_sha', 'head_sha')
-  expect(git).toBeCalledWith('switch', '-c', 'working_branch-split', 'root_sha')
-  expect(git).toBeCalledWith('restore', '-s', 'head_sha', 'dir/**')
-  expect(git).toBeCalledWith('add', '-Av', '.')
+  expect(git).toBeCalledWith(
+    'fetch',
+    'origin',
+    expect.stringMatching(/base_branch:working_branch-split-\d+/),
+    'working_branch:working_branch',
+    '--depth',
+    '1'
+  )
+  expect(git).toBeCalledWith(
+    'switch',
+    expect.stringMatching(/working_branch-split-\d+/)
+  )
+  expect(git).toBeCalledWith('restore', '-SW', '-s', 'working_branch', 'dir/**')
   expect(git).toBeCalledWith(
     '-c',
     'user.email=split-pr@example.com',
@@ -82,7 +81,11 @@ test('foo', async () => {
     '-m',
     'commit message'
   )
-  expect(git).toBeCalledWith('push', 'origin', 'working_branch-split')
+  expect(git).toBeCalledWith(
+    'push',
+    'origin',
+    expect.stringMatching(/working_branch-split-\d+/)
+  )
 
   expect(result.splitPullNumber).toEqual(101)
 })
