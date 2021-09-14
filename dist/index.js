@@ -207,7 +207,7 @@ function run(params) {
             const splitBranch = `${targetPull.head.ref}${params.branchSuffix}-${Date.now()}`;
             const baseRef = targetPull.base.ref;
             const headRef = targetPull.head.ref;
-            yield (0, git_1.git)('fetch', 'origin', `${baseRef}:${splitBranch}`, `${headRef}:${headRef}`);
+            yield (0, git_1.git)('fetch', 'origin', `${baseRef}:${splitBranch}`, `${headRef}:${headRef}`, '--unshallow');
             yield (0, git_1.git)('switch', splitBranch);
             yield (0, git_1.git)('merge', headRef, '--no-commit');
             yield (0, git_1.git)('reset');

@@ -61,7 +61,8 @@ export async function run(params: {
       'fetch',
       'origin',
       `${baseRef}:${splitBranch}`,
-      `${headRef}:${headRef}`
+      `${headRef}:${headRef}`,
+      '--unshallow'
     )
     await git('switch', splitBranch)
     await git('merge', headRef, '--no-commit')
