@@ -63,9 +63,7 @@ test('foo', async () => {
     'fetch',
     'origin',
     expect.stringMatching(/base_branch:working_branch-split-\d+/),
-    'working_branch:working_branch',
-    '--depth',
-    '1'
+    'working_branch:working_branch'
   )
   expect(git).toBeCalledWith(
     'switch',
