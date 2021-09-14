@@ -209,7 +209,7 @@ function run(params) {
             const headRef = targetPull.head.ref;
             yield (0, git_1.git)('fetch', 'origin', `${baseRef}:${splitBranch}`, `${headRef}:${headRef}`, '--depth', '1');
             yield (0, git_1.git)('switch', splitBranch);
-            yield (0, git_1.git)('restore', '-SW', '-s', headRef, params.filePattern);
+            yield (0, git_1.git)('restore', '-SW', '--overlay', '-s', headRef, params.filePattern);
             yield (0, git_1.git)('-c', `user.email=${params.commitEmail}`, '-c', `user.name=${params.commitUser}`, 'commit', '-m', params.commitMessage);
             yield (0, git_1.git)('push', 'origin', splitBranch);
             core.endGroup();
