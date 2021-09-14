@@ -57,6 +57,8 @@ export async function run(params: {
     const baseRef = targetPull.base.ref
     const headRef = targetPull.head.ref
 
+    await git('config', 'user.email', params.commitEmail)
+    await git('config', 'user.name', params.commitUser)
     await git(
       'fetch',
       'origin',
@@ -68,15 +70,7 @@ export async function run(params: {
     await git('merge', headRef, '--no-commit')
     await git('reset')
     await git('add', params.filePattern)
-    await git(
-      '-c',
-      `user.email=${params.commitEmail}`,
-      '-c',
-      `user.name=${params.commitUser}`,
-      'commit',
-      '-m',
-      params.commitMessage
-    )
+    await git('commit', '-m', params.commitMessage)
     await git('push', 'origin', splitBranch)
     core.endGroup()
 

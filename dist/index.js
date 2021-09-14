@@ -207,12 +207,14 @@ function run(params) {
             const splitBranch = `${targetPull.head.ref}${params.branchSuffix}-${Date.now()}`;
             const baseRef = targetPull.base.ref;
             const headRef = targetPull.head.ref;
+            yield (0, git_1.git)('config', 'user.email', params.commitEmail);
+            yield (0, git_1.git)('config', 'user.name', params.commitUser);
             yield (0, git_1.git)('fetch', 'origin', `${baseRef}:${splitBranch}`, `${headRef}:${headRef}`, '--unshallow');
             yield (0, git_1.git)('switch', splitBranch);
             yield (0, git_1.git)('merge', headRef, '--no-commit');
             yield (0, git_1.git)('reset');
             yield (0, git_1.git)('add', params.filePattern);
-            yield (0, git_1.git)('-c', `user.email=${params.commitEmail}`, '-c', `user.name=${params.commitUser}`, 'commit', '-m', params.commitMessage);
+            yield (0, git_1.git)('commit', '-m', params.commitMessage);
             yield (0, git_1.git)('push', 'origin', splitBranch);
             core.endGroup();
             core.startGroup('Create the split pull request');
