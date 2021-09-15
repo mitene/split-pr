@@ -59,28 +59,23 @@ test('foo', async () => {
 
   scope.done() // assert github apis are called as expected
 
+  expect(git).toBeCalledWith('config', 'user.email', 'split-pr@example.com')
+  expect(git).toBeCalledWith('config', 'user.name', 'split-pr-user')
   expect(git).toBeCalledWith(
     'fetch',
     'origin',
     expect.stringMatching(/base_branch:working_branch-split-\d+/),
     'working_branch:working_branch',
-    '--depth',
-    '1'
+    '--unshallow'
   )
   expect(git).toBeCalledWith(
     'switch',
     expect.stringMatching(/working_branch-split-\d+/)
   )
-  expect(git).toBeCalledWith('restore', '-SW', '-s', 'working_branch', 'dir/**')
-  expect(git).toBeCalledWith(
-    '-c',
-    'user.email=split-pr@example.com',
-    '-c',
-    'user.name=split-pr-user',
-    'commit',
-    '-m',
-    'commit message'
-  )
+  expect(git).toBeCalledWith('merge', 'working_branch', '--no-commit')
+  expect(git).toBeCalledWith('reset')
+  expect(git).toBeCalledWith('add', 'dir/**')
+  expect(git).toBeCalledWith('commit', '-m', 'commit message')
   expect(git).toBeCalledWith(
     'push',
     'origin',
