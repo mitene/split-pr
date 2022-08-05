@@ -67,7 +67,7 @@ export async function run(params: {
       '--unshallow'
     )
     await git('switch', splitBranch)
-    await git('merge', headRef, '--no-commit')
+    await git('merge', headRef, '--no-commit', '--no-ff')
     await git('reset')
     await git('add', params.filePattern)
     await git('commit', '-m', params.commitMessage)
