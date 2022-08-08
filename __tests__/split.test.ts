@@ -72,7 +72,7 @@ test('foo', async () => {
     'switch',
     expect.stringMatching(/working_branch-split-\d+/)
   )
-  expect(git).toBeCalledWith('merge', 'working_branch', '--no-commit')
+  expect(git).toBeCalledWith('merge', 'working_branch', '--no-commit', '--no-ff')
   expect(git).toBeCalledWith('reset')
   expect(git).toBeCalledWith('add', 'dir/**')
   expect(git).toBeCalledWith('commit', '-m', 'commit message')
